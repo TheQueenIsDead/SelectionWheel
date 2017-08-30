@@ -31,6 +31,7 @@ public class SelectionWheel {
     private double SCROLL_SPEED = 0.2;
 
     private ObjectProperty<Arc> clickedArc = new SimpleObjectProperty<>();
+    private ObjectProperty<ImageView> clickedImage = new SimpleObjectProperty<>();
 
     private Canvas canvas = new Canvas();
     private GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -63,6 +64,12 @@ public class SelectionWheel {
                 handleSelection(arcList.indexOf(newSelection));
             }
         });
+        clickedImage.addListener((obs, oldSelection, newSelection) -> {
+            if(newSelection != null){
+                handleSelection(imageList.indexOf(newSelection));
+            }
+        });
+
 
 //        mouseArc.addListener((obs, oldSelection, newSelection) -> {
 //            expandArcRadius(arcList.indexOf(newSelection));
@@ -159,6 +166,10 @@ public class SelectionWheel {
 
             setImageViewCoords(i, imgView);
 
+            imgView.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+                clickedImage.set(imgView);
+            });
+
             imageList.add(imgView);
             mainPane.getChildren().add(imgView);
         }
@@ -181,13 +192,15 @@ public class SelectionWheel {
 
         Transition expand = new Transition() {
             {
-                setCycleDuration(Duration.millis(25));
+                setCycleDuration(Duration.millis(50));
             }
             @Override
             protected void interpolate(double frac) {
-                double newRadius = RADIUS + frac * (RADIUS+25 - RADIUS);
-                arcList.get(selection).setRadiusX(newRadius);
-                arcList.get(selection).setRadiusY(newRadius);
+                if (selection == selected) {
+                    double newRadius = RADIUS + frac * (RADIUS + 25 - RADIUS);
+                    arcList.get(selection).setRadiusX(newRadius);
+                    arcList.get(selection).setRadiusY(newRadius);
+                }
             }
         };
         expand.play();
@@ -213,12 +226,12 @@ public class SelectionWheel {
 
         System.out.println(rX + " " + rY);
 
-        double cSegX = (rX+cX)/2;
-        double cSegY = (rY+cY)/2;
+//        double cSegX = (rX+cX)/2;
+//        double cSegY = (rY+cY)/2;
 
         //Can be used to change the pos of the image by editing the / 2
-//        double cSegX = cX + ((rX - cX)/1.5);
-//        double cSegY = cY + ((rY - cY)/1.5);
+        double cSegX = cX + ((rX - cX)/1.5);
+        double cSegY = cY + ((rY - cY)/1.5);
 
         imgView.setX(cSegX - (imgView.getFitWidth()/2));
         imgView.setY(cSegY - (imgView.getFitHeight()/2));
